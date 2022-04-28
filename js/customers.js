@@ -10,6 +10,27 @@ const readCustomers = async() => {
 
 }
 
+export const readCustomerById = async(codigo) => {
+
+    const response = await fetch(`${url}/${codigo}`)
+    return await response.json()
+
+}
+
+export const fillFormCustomer = (customer) => {
+
+    const inputName = document.getElementById('nome')
+    const inputEmail = document.getElementById('email')
+    const inputPhone = document.getElementById('celular')
+    const inputCity = document.getElementById('cidade')
+
+    inputName.value = customer.nome
+    inputEmail.value = customer.email
+    inputPhone.value = customer.celular
+    inputCity.value = customer.cidade
+
+}
+
 const createCustomers = async(customers) => {
 
     const options = {
@@ -21,6 +42,20 @@ const createCustomers = async(customers) => {
     }
 
     const response = await fetch(url,options)
+    console.log(response.ok)
+}
+
+export const updateCustomer = async(customer) => {
+
+    const options = {
+        method: 'PUT',
+        body: JSON.stringify(customer),
+        headers: {
+            'content-type': 'application/json'
+        }
+    }
+
+    const response = await fetch(`${url}/${customer.id}`, options)
     console.log(response.ok)
 }
 
@@ -38,5 +73,5 @@ const deleteCustomer = async(codigo) => {
 export {
     readCustomers,
     createCustomers,
-    deleteCustomer
+    deleteCustomer,
 }

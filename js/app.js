@@ -1,7 +1,7 @@
 'use strict'
 
 import { openModal, closeModal } from './modal.js'
-import { readCustomers, createCustomers, deleteCustomer } from './customers.js'
+import { readCustomers, createCustomers, deleteCustomer, readCustomerById, fillFormCustomer, updateCustomer } from './customers.js'
 
 // Trazerá apenas um cliente, utilizando o map passará por todos do array
 const createRow = (customers) => {
@@ -54,19 +54,67 @@ const saveCustomers = async () => {
     updateTable()
 }
 
-const actionCustomer = async(event) => {
+const editCustomer = async () => {
+
+    const customers = {
+        "id": document.getElementById('enviar').value,
+        "nome": document.getElementById('nome').value,
+        "email": document.getElementById('email').value,
+        "celular": document.getElementById('celular').value,
+        "cidade": document.getElementById('cidade').value
+    }
+
+    await updateCustomer(customers)
+
+    closeModal()
+
+    updateTable()
+}
+
+const sendCustomers = async (event) => {
+
+    const method = event.target.textContent.toUpperCase()
+
+    if (method == 'SALVAR') {
+        await saveCustomers()
+    } else if (method == 'EDITAR') {
+        await editCustomer()
+    }
+
+    clearForm()
+}
+
+const actionCustomer = async (event) => {
 
     if (event.target.type == 'button') {
 
         const [action, codigo] = event.target.id.split('-')
 
         if (action == 'editar') {
-            console.log('editar')
-        }else if(action == 'excluir'){
+            const button = document.getElementById('enviar')
+            button.textContent = 'Editar'
+            button.value = codigo
+            openModal()
+            const customer = await readCustomerById(codigo)
+            fillFormCustomer(customer)
+        } else if (action == 'excluir') {
             await deleteCustomer(codigo)
             updateTable()
         }
     }
+}
+
+const clearForm = () => {
+
+    document.getElementById('nome').value = ''
+    document.getElementById('email').value = ''
+    document.getElementById('celular').value = ''
+    document.getElementById('cidade').value = ''
+
+    const button = document.getElementById('enviar')
+    button.textContent = 'Salvar'
+    button.value = ''
+
 }
 
 
@@ -74,5 +122,5 @@ updateTable()
 
 // Eventos
 document.getElementById('cadastrarCliente').addEventListener('click', openModal)
-document.getElementById('salvar').addEventListener('click', saveCustomers)
+document.getElementById('enviar').addEventListener('click', sendCustomers)
 document.getElementById('customers-container').addEventListener('click', actionCustomer)
