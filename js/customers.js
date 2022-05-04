@@ -3,40 +3,19 @@
 const url = 'https://testeleonid.herokuapp.com/clientes'
 
 // Consumindo a api
-const readCustomers = async() => {
+export const readCustomers = async(id='') => {
 
-    const response = await fetch(url)
+    const response = await fetch(`${url}/${id}`)
     return await response.json()
 
 }
 
-export const readCustomerById = async(codigo) => {
-
-    const response = await fetch(`${url}/${codigo}`)
-    return await response.json()
-
-}
-
-export const fillFormCustomer = (customer) => {
-
-    const inputName = document.getElementById('nome')
-    const inputEmail = document.getElementById('email')
-    const inputPhone = document.getElementById('celular')
-    const inputCity = document.getElementById('cidade')
-
-    inputName.value = customer.nome
-    inputEmail.value = customer.email
-    inputPhone.value = customer.celular
-    inputCity.value = customer.cidade
-
-}
-
-const createCustomers = async(customers) => {
+export const createCustomers = async(customers) => {
 
     const options = {
         method: 'POST',
         body: JSON.stringify(customers),
-        headers: {
+        headers: { 
             'content-type': 'application/json'
         }
     }
@@ -59,7 +38,7 @@ export const updateCustomer = async(customer) => {
     console.log(response.ok)
 }
 
-const deleteCustomer = async(codigo) => {
+export const deleteCustomer = async(codigo) => {
 
     const options = {
         method: 'DELETE'
@@ -68,10 +47,4 @@ const deleteCustomer = async(codigo) => {
     const response = await fetch(`${url}/${codigo}`, options)
     console.log(response.ok)
 
-}
-
-export {
-    readCustomers,
-    createCustomers,
-    deleteCustomer,
 }

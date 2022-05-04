@@ -1,7 +1,7 @@
 'use strict'
 
 import { openModal, closeModal } from './modal.js'
-import { readCustomers, createCustomers, deleteCustomer, readCustomerById, fillFormCustomer, updateCustomer } from './customers.js'
+import { readCustomers, createCustomers, deleteCustomer, updateCustomer} from './customers.js'
 
 // Trazerá apenas um cliente, utilizando o map passará por todos do array
 const createRow = (customers) => {
@@ -12,8 +12,8 @@ const createRow = (customers) => {
                     <td>${customers.celular}</td>
                     <td>${customers.cidade}</td>
                     <td>
-                        <button type="button" class="button green" id="editar-${customers.id}">editar</button>
-                        <button type="button" class="button red" id="excluir-${customers.id}">excluir </button>
+                        <button type="button" class="button green" onClick="editCustomer(${customers.id})">editar</button>
+                        <button type="button" class="button red" onClick="delCustomer(${customers.id})">excluir </button>
                     </td>
     `
     return row
@@ -33,6 +33,8 @@ const updateTable = async () => {
 
 }
 
+const isEdit = () => document.getElementById('nome').hasAttribute('data-id')
+
 // Salvando os dados do cliente e mandando para a API
 const saveCustomers = async () => {
     // Criar um json com as informações do Cliente
@@ -44,6 +46,13 @@ const saveCustomers = async () => {
         "cidade": document.getElementById('cidade').value
     }
 
+    if(isEdit()){
+        customers.id = document.getElementById('nome').dataset.id
+        await updateCustomer(customers)
+    } else{
+        await createCustomers(customers)
+    }
+
     // Enviar o json para o Servidor API
     await createCustomers(customers)
 
@@ -52,51 +61,45 @@ const saveCustomers = async () => {
 
     // Atualizar
     updateTable()
+
 }
 
-const editCustomer = async () => {
+const fillFormCustomer = (customers) => {
 
-    const customers = {
-        "id": document.getElementById('enviar').value,
-        "nome": document.getElementById('nome').value,
-        "email": document.getElementById('email').value,
-        "celular": document.getElementById('celular').value,
-        "cidade": document.getElementById('cidade').value
-    }
+    document.getElementById('nome').value = customers.nome
+    document.getElementById('email').value = customers.email
+    document.getElementById('celular').value = customers.celular
+    document.getElementById('cidade').value = customers.cidade
+    document.getElementById('nome').dataset.id = customers.id
 
-    await updateCustomer(customers)
+}
 
-    closeModal()
+globalThis.editCustomer = async(id) => {
+    //armazenar as informações do cliente selecionado em uma variável
 
+    const customer = await readCustomers(id)
+    console.log(customer)
+
+    //preencher o formulário com as informações
+    fillFormCustomer(customer)
+
+    //abrir o modal no estado de edição
+    openModal()
+}
+
+globalThis.delCustomer = async(id) => {
+    await deleteCustomer(id)
     updateTable()
 }
 
-const sendCustomers = async (event) => {
-
-    const method = event.target.textContent.toUpperCase()
-
-    if (method == 'SALVAR') {
-        await saveCustomers()
-    } else if (method == 'EDITAR') {
-        await editCustomer()
-    }
-
-    clearForm()
-}
-
-const actionCustomer = async (event) => {
+const actionCustomer = async (event) => { 
 
     if (event.target.type == 'button') {
 
         const [action, codigo] = event.target.id.split('-')
 
         if (action == 'editar') {
-            const button = document.getElementById('enviar')
-            button.textContent = 'Editar'
-            button.value = codigo
-            openModal()
-            const customer = await readCustomerById(codigo)
-            fillFormCustomer(customer)
+            console.log('foi')
         } else if (action == 'excluir') {
             await deleteCustomer(codigo)
             updateTable()
@@ -104,23 +107,10 @@ const actionCustomer = async (event) => {
     }
 }
 
-const clearForm = () => {
-
-    document.getElementById('nome').value = ''
-    document.getElementById('email').value = ''
-    document.getElementById('celular').value = ''
-    document.getElementById('cidade').value = ''
-
-    const button = document.getElementById('enviar')
-    button.textContent = 'Salvar'
-    button.value = ''
-
-}
-
 
 updateTable()
 
 // Eventos
 document.getElementById('cadastrarCliente').addEventListener('click', openModal)
-document.getElementById('enviar').addEventListener('click', sendCustomers)
+document.getElementById('salvar').addEventListener('click', await saveCustomers)
 document.getElementById('customers-container').addEventListener('click', actionCustomer)
