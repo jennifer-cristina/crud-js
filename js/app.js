@@ -1,7 +1,7 @@
 'use strict'
 
 import { openModal, closeModal } from './modal.js'
-import { readCustomers, createCustomers, deleteCustomer, updateCustomer} from './customers.js'
+import { readCustomers, createCustomers, deleteCustomer, updateCustomer } from './customers.js'
 
 // Trazerá apenas um cliente, utilizando o map passará por todos do array
 const createRow = (customers) => {
@@ -37,30 +37,31 @@ const isEdit = () => document.getElementById('nome').hasAttribute('data-id')
 
 // Salvando os dados do cliente e mandando para a API
 const saveCustomers = async () => {
+    const form = document.getElementById('modal-form')
     // Criar um json com as informações do Cliente
     const customers = {
         "id": "",
         "nome": document.getElementById('nome').value,
         "email": document.getElementById('email').value,
         "celular": document.getElementById('celular').value,
-        "cidade": document.getElementById('cidade').value
+        "cidade": document.getElementById('cidade').value,
+        "foto": document.getElementById('modal-image').src 
     }
 
-    if(isEdit()){
-        customers.id = document.getElementById('nome').dataset.id
-        await updateCustomer(customers)
-    } else{
-        await createCustomers(customers)
+    if (form.reportValidity()) {
+        if (isEdit()) {
+            customers.id = document.getElementById('nome').dataset.id
+            await updateCustomer(customers)
+        } else {
+            await createCustomers(customers)
+        }
+
+        // Fechar a modal 
+        closeModal()
+
+        // Atualizar
+        updateTable()
     }
-
-    // Enviar o json para o Servidor API
-    await createCustomers(customers)
-
-    // Fechar a modal 
-    closeModal()
-
-    // Atualizar
-    updateTable()
 
 }
 
@@ -71,10 +72,11 @@ const fillFormCustomer = (customers) => {
     document.getElementById('celular').value = customers.celular
     document.getElementById('cidade').value = customers.cidade
     document.getElementById('nome').dataset.id = customers.id
+    document.getElementById('modal-image').src = customers.foto
 
 }
 
-globalThis.editCustomer = async(id) => {
+globalThis.editCustomer = async (id) => {
     //armazenar as informações do cliente selecionado em uma variável
 
     const customer = await readCustomers(id)
@@ -87,12 +89,12 @@ globalThis.editCustomer = async(id) => {
     openModal()
 }
 
-globalThis.delCustomer = async(id) => {
+globalThis.delCustomer = async (id) => {
     await deleteCustomer(id)
     updateTable()
 }
 
-const actionCustomer = async (event) => { 
+const actionCustomer = async (event) => {
 
     if (event.target.type == 'button') {
 
@@ -107,6 +109,17 @@ const actionCustomer = async (event) => {
     }
 }
 
+// mascara do telefone, para se preencher os campos
+const maskPhone = ({target}) => {
+
+    let text = target.value
+
+    text = text.replace(/[^0-9]/g,'')
+    text = text.replace(/(.{2})(.{5})(.{4})/, '($1) $2-$3')
+    text = text.replace(/(.{17})(.*)/, '$1')
+
+    target.value = text
+}
 
 updateTable()
 
@@ -114,3 +127,4 @@ updateTable()
 document.getElementById('cadastrarCliente').addEventListener('click', openModal)
 document.getElementById('salvar').addEventListener('click', await saveCustomers)
 document.getElementById('customers-container').addEventListener('click', actionCustomer)
+document.getElementById('celular').addEventListener('keyup', maskPhone)
